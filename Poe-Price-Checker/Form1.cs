@@ -6,14 +6,13 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-using System.Diagnostics;
+//using System.Diagnostics;
 namespace PoePriceChecker
 {
     public partial class Form1 : Form
@@ -35,16 +34,14 @@ namespace PoePriceChecker
         #region ThreadInformation class and shit
         public class ThreadInformation
         {
-            public int id { get; set; }
             public bool isEnabled { get; set; }
-            public double Started { get; set; }
+            public Int32 Started { get; set; }
             public object richBox { get; set; }
             public object valueBox { get; set; }
             public object TimeWait { get; set; }
 
-            public ThreadInformation(int _id, bool _isEnabled, double _Started, object _richBox, object _valueBox, object _TimeWait)
+            public ThreadInformation(bool _isEnabled, Int32 _Started, object _richBox, object _valueBox, object _TimeWait)
             {
-                id = _id;
                 isEnabled = _isEnabled;
                 Started = _Started;
                 richBox = _richBox;
@@ -90,39 +87,12 @@ namespace PoePriceChecker
                 iOffSet = i + 1;
 
                 RegisterHotKey(this.Handle, i, (int)KeyModifier.Alt, HotKeyHashes[i]); //Register Hotkeys Alt-1 through Alt-6 ::TODO:: Add Shift-1 through Shift-5 for swapping tabs
-                Threads.Add(new ThreadInformation(i, false, 0.0f,
+                Threads.Add(new ThreadInformation(false, 0,
                     this.Controls.Find("richTextBox" + iOffSet, true)[0], //Link "ItemBox" richtextbox to thread.
                     this.Controls.Find("Value" + iOffSet, true)[0],       //Link "Value" label to thread.
                     this.Controls.Find("pictureBox" + iOffSet, true)[0]   //Link Spinny Picture shit to thread.
                 ));
             }
-        }
-
-        public static async Task<string> DownloadStringAsync(int index, int timeOut = 15000)
-        {
-            string output = null;
-            bool cancelledOrError = false;
-            using (var client = new WebClient())
-            {
-                client.DownloadStringCompleted += (sender, e) =>
-                {
-                    if (e.Error != null || e.Cancelled)
-                    {
-                        cancelledOrError = true;
-                    }
-                    else
-                    {
-                        output = e.Result;
-                    }
-                };
-                client.DownloadStringAsync(new Uri(string.Format("http://cdn.poe.ninja/api/Data/Get{0}Overview?league=Harbinger", Update_Urls[index])));
-                var n = DateTime.Now;
-                while (output == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
-                {
-                    await Task.Delay(100); // wait for respsonse
-                }
-            }
-            return output;
         }
 
         protected override void WndProc(ref Message m) //listen for hotkeys
@@ -149,6 +119,7 @@ namespace PoePriceChecker
                 if (!Threads[id].isEnabled)
                 {
                     Threads[id].isEnabled = true;
+                    Threads[id].Started = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                     ((PictureBox)Threads[id].TimeWait).Visible = true;
                     HotKeyPressed(id);
                 }
@@ -167,56 +138,56 @@ namespace PoePriceChecker
 
                 string Value = "";
                 string ItemTextCopy = ItemData_0;
-                string Corruption_Test = "";
-                string Corruption_richtextbox = "";
+                //string Corruption_Test = "";
+                //string Corruption_richtextbox = "";
+                NameValueCollection postParam = new NameValueCollection();
+                string Response = "";
+                byte[] rBytes;
 
                 if (string.IsNullOrEmpty(ItemTextCopy) || !ItemTextCopy.Contains("Rarity:"))
                     return;
 
                 ((RichTextBox)Threads[id].richBox).Invoke((MethodInvoker)delegate {
-                    Corruption_richtextbox = ((RichTextBox)Threads[id].richBox).Text;
+                    //Corruption_richtextbox = ((RichTextBox)Threads[id].richBox).Text;
                     ((RichTextBox)Threads[id].richBox).Text = ItemTextCopy;
                     //((RichTextBox)Threads[id].richBox).Lines[1] = string.Join(((RichTextBox)Threads[id].richBox).Lines[1], "*");
                 });
 
                 ((Label)Threads[id].valueBox).Invoke((MethodInvoker)delegate { ((Label)Threads[id].valueBox).Text = "----"; });
 
-                if(!string.IsNullOrEmpty(ItemTextCopy) && !string.IsNullOrEmpty(Corruption_richtextbox))
-                    Corruption_Test = Corruption_richtextbox + Environment.NewLine + "--------" + Environment.NewLine + "Corrupted";
+                //if(!string.IsNullOrEmpty(ItemTextCopy) && !string.IsNullOrEmpty(Corruption_richtextbox))
+                    //Corruption_Test = Corruption_richtextbox + Environment.NewLine + "--------" + Environment.NewLine + "Corrupted" + Environment.NewLine;
 
                 if (string.IsNullOrEmpty(ItemTextCopy))
                     return;
-                else if (ItemData_0 == Corruption_Test)
-                    Debug.WriteLine("The item test was successful and will return instead of rechecking price.");
+                //else if (ItemData_0 == Corruption_Test)
+                    //Debug.WriteLine("The item test was successful and will return instead of rechecking price.");
 
-                Debug.WriteLine("Got itemtext as : " + ItemTextCopy);
+                postParam.Add("itemtext", ItemTextCopy);
+                postParam.Add("league", "Harbinger");
+                postParam.Add("auto", "auto");
+                postParam.Add("submit", "Submit");
+
                 while (true)
                 {
-                    try
-                    {
+                    try {
                         using (WebClient wc = new WebClient())
                         {
-                            var postParam = new NameValueCollection();
-                            postParam.Add("itemtext", ItemTextCopy);
-                            postParam.Add("league", "Harbinger");
-                            postParam.Add("auto", "auto");
-                            postParam.Add("submit", "Submit");
+                            if ((Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - Threads[id].Started > 20) {
+                                Value = "Error: Timed out (Website down?)."; break;
+                            }
 
-                            byte[] responsebytes = wc.UploadValues("http://www.poeprices.info/query", "POST", postParam);
-                            var tmpp = Encoding.UTF8.GetString(responsebytes);
+                            rBytes = wc.UploadValues("http://www.poeprices.info/query", "POST", postParam);
+                            Response = Encoding.UTF8.GetString(rBytes);
 
-                                /*string[] tokens = tmpp.Split(new[] { "Recommended Price: " }, StringSplitOptions.None);
-                                int EndPointer = tokens[1].IndexOf('<');
-                                Value = tokens[1].Substring(0, EndPointer);*/
-
-                            if (tmpp.Contains("Recommended Price"))
-                                Value = tmpp.Split(new[] { "Recommended Price: " }, StringSplitOptions.None)[1].Substring(0, tmpp.Split(new[] { "Recommended Price: " }, StringSplitOptions.None)[1].IndexOf('<'));
+                            if (Response.Contains("Recommended Price"))
+                                Value = Response.Split(new[] { "Recommended Price: " }, StringSplitOptions.None)[1].Substring(0, Response.Split(new[] { "Recommended Price: " }, StringSplitOptions.None)[1].IndexOf('<'));
                             else
                                 Value = "Unknown.";
 
                             break;
                         }
-                    } catch (Exception eR) { Debug.WriteLine(eR.ToString()); }
+                    } catch { }
                 }
 
                 ((Label)Threads[id].valueBox).Invoke((MethodInvoker)delegate { ((Label)Threads[id].valueBox).Text = Value; });
@@ -228,11 +199,8 @@ namespace PoePriceChecker
             {
                 int id = (int)e.Result;
 
-                ((RichTextBox)Threads[id].richBox).Invoke((MethodInvoker)delegate {
-                    //((RichTextBox)Threads[id].richBox).Lines[1] = string.Join(((RichTextBox)Threads[id].richBox).Lines[1], "\u221A");
-                });
-
                 ((PictureBox)Threads[id].TimeWait).Visible = false;
+                Threads[id].Started = 0;
                 Threads[id].isEnabled = false;
 
                 bg.Dispose();
