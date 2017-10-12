@@ -60,6 +60,22 @@
             this.label12 = new System.Windows.Forms.Label();
             this.richTextBox6 = new System.Windows.Forms.RichTextBox();
             this.tabPage7 = new System.Windows.Forms.TabPage();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.Label_Version = new System.Windows.Forms.Label();
+            this.hotBox6 = new System.Windows.Forms.TextBox();
+            this.hotBox5 = new System.Windows.Forms.TextBox();
+            this.hotBox4 = new System.Windows.Forms.TextBox();
+            this.hotBox3 = new System.Windows.Forms.TextBox();
+            this.hotBox2 = new System.Windows.Forms.TextBox();
+            this.hotBox1 = new System.Windows.Forms.TextBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -73,6 +89,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox5)).BeginInit();
             this.tabPage6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).BeginInit();
+            this.tabPage7.SuspendLayout();
             this.SuspendLayout();
             // 
             // richTextBox1
@@ -83,6 +100,7 @@
             this.richTextBox1.ForeColor = System.Drawing.Color.White;
             this.richTextBox1.Location = new System.Drawing.Point(3, 65);
             this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.ReadOnly = true;
             this.richTextBox1.Size = new System.Drawing.Size(539, 154);
             this.richTextBox1.TabIndex = 1;
             this.richTextBox1.Text = "";
@@ -102,6 +120,7 @@
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(553, 248);
             this.tabControl1.TabIndex = 3;
+            this.tabControl1.TabStop = false;
             // 
             // tabPage1
             // 
@@ -199,6 +218,7 @@
             this.richTextBox2.ForeColor = System.Drawing.Color.White;
             this.richTextBox2.Location = new System.Drawing.Point(3, 65);
             this.richTextBox2.Name = "richTextBox2";
+            this.richTextBox2.ReadOnly = true;
             this.richTextBox2.Size = new System.Drawing.Size(539, 154);
             this.richTextBox2.TabIndex = 4;
             this.richTextBox2.Text = "";
@@ -256,6 +276,7 @@
             this.richTextBox3.ForeColor = System.Drawing.Color.White;
             this.richTextBox3.Location = new System.Drawing.Point(3, 65);
             this.richTextBox3.Name = "richTextBox3";
+            this.richTextBox3.ReadOnly = true;
             this.richTextBox3.Size = new System.Drawing.Size(539, 154);
             this.richTextBox3.TabIndex = 4;
             this.richTextBox3.Text = "";
@@ -313,6 +334,7 @@
             this.richTextBox4.ForeColor = System.Drawing.Color.White;
             this.richTextBox4.Location = new System.Drawing.Point(3, 65);
             this.richTextBox4.Name = "richTextBox4";
+            this.richTextBox4.ReadOnly = true;
             this.richTextBox4.Size = new System.Drawing.Size(539, 154);
             this.richTextBox4.TabIndex = 4;
             this.richTextBox4.Text = "";
@@ -370,6 +392,7 @@
             this.richTextBox5.ForeColor = System.Drawing.Color.White;
             this.richTextBox5.Location = new System.Drawing.Point(3, 65);
             this.richTextBox5.Name = "richTextBox5";
+            this.richTextBox5.ReadOnly = true;
             this.richTextBox5.Size = new System.Drawing.Size(539, 154);
             this.richTextBox5.TabIndex = 4;
             this.richTextBox5.Text = "";
@@ -425,6 +448,7 @@
             this.richTextBox6.ForeColor = System.Drawing.Color.White;
             this.richTextBox6.Location = new System.Drawing.Point(3, 65);
             this.richTextBox6.Name = "richTextBox6";
+            this.richTextBox6.ReadOnly = true;
             this.richTextBox6.Size = new System.Drawing.Size(539, 154);
             this.richTextBox6.TabIndex = 4;
             this.richTextBox6.Text = "";
@@ -432,6 +456,22 @@
             // 
             // tabPage7
             // 
+            this.tabPage7.Controls.Add(this.comboBox1);
+            this.tabPage7.Controls.Add(this.checkBox1);
+            this.tabPage7.Controls.Add(this.Label_Version);
+            this.tabPage7.Controls.Add(this.hotBox6);
+            this.tabPage7.Controls.Add(this.hotBox5);
+            this.tabPage7.Controls.Add(this.hotBox4);
+            this.tabPage7.Controls.Add(this.hotBox3);
+            this.tabPage7.Controls.Add(this.hotBox2);
+            this.tabPage7.Controls.Add(this.hotBox1);
+            this.tabPage7.Controls.Add(this.label13);
+            this.tabPage7.Controls.Add(this.label11);
+            this.tabPage7.Controls.Add(this.label9);
+            this.tabPage7.Controls.Add(this.label7);
+            this.tabPage7.Controls.Add(this.label5);
+            this.tabPage7.Controls.Add(this.label3);
+            this.tabPage7.Controls.Add(this.label2);
             this.tabPage7.ForeColor = System.Drawing.Color.Black;
             this.tabPage7.Location = new System.Drawing.Point(4, 22);
             this.tabPage7.Name = "tabPage7";
@@ -439,6 +479,197 @@
             this.tabPage7.TabIndex = 6;
             this.tabPage7.Text = "Settings";
             this.tabPage7.UseVisualStyleBackColor = true;
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(401, 44);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(133, 17);
+            this.checkBox1.TabIndex = 20;
+            this.checkBox1.Text = "Single Monitor Support";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
+            // Label_Version
+            // 
+            this.Label_Version.AutoSize = true;
+            this.Label_Version.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label_Version.Location = new System.Drawing.Point(397, 195);
+            this.Label_Version.Name = "Label_Version";
+            this.Label_Version.Size = new System.Drawing.Size(123, 20);
+            this.Label_Version.TabIndex = 19;
+            this.Label_Version.Text = "Version 00.00.000";
+            // 
+            // hotBox6
+            // 
+            this.hotBox6.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.hotBox6.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hotBox6.Location = new System.Drawing.Point(74, 187);
+            this.hotBox6.Name = "hotBox6";
+            this.hotBox6.Size = new System.Drawing.Size(100, 22);
+            this.hotBox6.TabIndex = 18;
+            this.hotBox6.TabStop = false;
+            this.hotBox6.Text = "Alt + 1";
+            this.hotBox6.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.hotBox6.Enter += new System.EventHandler(this.hotBox1_Enter);
+            this.hotBox6.KeyDown += new System.Windows.Forms.KeyEventHandler(this.hotBox1_KeyDown);
+            this.hotBox6.Leave += new System.EventHandler(this.hotBox1_Leave);
+            // 
+            // hotBox5
+            // 
+            this.hotBox5.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.hotBox5.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hotBox5.Location = new System.Drawing.Point(74, 158);
+            this.hotBox5.Name = "hotBox5";
+            this.hotBox5.Size = new System.Drawing.Size(100, 22);
+            this.hotBox5.TabIndex = 17;
+            this.hotBox5.TabStop = false;
+            this.hotBox5.Text = "Alt + 1";
+            this.hotBox5.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.hotBox5.Enter += new System.EventHandler(this.hotBox1_Enter);
+            this.hotBox5.KeyDown += new System.Windows.Forms.KeyEventHandler(this.hotBox1_KeyDown);
+            this.hotBox5.Leave += new System.EventHandler(this.hotBox1_Leave);
+            // 
+            // hotBox4
+            // 
+            this.hotBox4.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.hotBox4.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hotBox4.Location = new System.Drawing.Point(74, 129);
+            this.hotBox4.Name = "hotBox4";
+            this.hotBox4.Size = new System.Drawing.Size(100, 22);
+            this.hotBox4.TabIndex = 16;
+            this.hotBox4.TabStop = false;
+            this.hotBox4.Text = "Alt + 1";
+            this.hotBox4.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.hotBox4.Enter += new System.EventHandler(this.hotBox1_Enter);
+            this.hotBox4.KeyDown += new System.Windows.Forms.KeyEventHandler(this.hotBox1_KeyDown);
+            this.hotBox4.Leave += new System.EventHandler(this.hotBox1_Leave);
+            // 
+            // hotBox3
+            // 
+            this.hotBox3.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.hotBox3.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hotBox3.Location = new System.Drawing.Point(74, 101);
+            this.hotBox3.Name = "hotBox3";
+            this.hotBox3.Size = new System.Drawing.Size(100, 22);
+            this.hotBox3.TabIndex = 15;
+            this.hotBox3.TabStop = false;
+            this.hotBox3.Text = "Alt + 1";
+            this.hotBox3.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.hotBox3.Enter += new System.EventHandler(this.hotBox1_Enter);
+            this.hotBox3.KeyDown += new System.Windows.Forms.KeyEventHandler(this.hotBox1_KeyDown);
+            this.hotBox3.Leave += new System.EventHandler(this.hotBox1_Leave);
+            // 
+            // hotBox2
+            // 
+            this.hotBox2.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.hotBox2.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hotBox2.Location = new System.Drawing.Point(74, 73);
+            this.hotBox2.Name = "hotBox2";
+            this.hotBox2.Size = new System.Drawing.Size(100, 22);
+            this.hotBox2.TabIndex = 14;
+            this.hotBox2.TabStop = false;
+            this.hotBox2.Text = "Alt + 1";
+            this.hotBox2.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.hotBox2.Enter += new System.EventHandler(this.hotBox1_Enter);
+            this.hotBox2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.hotBox1_KeyDown);
+            this.hotBox2.Leave += new System.EventHandler(this.hotBox1_Leave);
+            // 
+            // hotBox1
+            // 
+            this.hotBox1.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.hotBox1.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hotBox1.Location = new System.Drawing.Point(74, 44);
+            this.hotBox1.Name = "hotBox1";
+            this.hotBox1.ShortcutsEnabled = false;
+            this.hotBox1.Size = new System.Drawing.Size(100, 22);
+            this.hotBox1.TabIndex = 13;
+            this.hotBox1.TabStop = false;
+            this.hotBox1.Text = "Alt + 1";
+            this.hotBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.hotBox1.Enter += new System.EventHandler(this.hotBox1_Enter);
+            this.hotBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.hotBox1_KeyDown);
+            this.hotBox1.Leave += new System.EventHandler(this.hotBox1_Leave);
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label13.Location = new System.Drawing.Point(25, 188);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(43, 17);
+            this.label13.TabIndex = 12;
+            this.label13.Text = "Tab 6:";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label11.Location = new System.Drawing.Point(25, 159);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(43, 17);
+            this.label11.TabIndex = 11;
+            this.label11.Text = "Tab 5:";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(25, 130);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(43, 17);
+            this.label9.TabIndex = 10;
+            this.label9.Text = "Tab 4:";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(25, 102);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(43, 17);
+            this.label7.TabIndex = 9;
+            this.label7.Text = "Tab 3:";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(25, 74);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(43, 17);
+            this.label5.TabIndex = 8;
+            this.label5.Text = "Tab 2:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Location = new System.Drawing.Point(25, 45);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(43, 17);
+            this.label3.TabIndex = 7;
+            this.label3.Text = "Tab 1:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(15, 8);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(96, 30);
+            this.label2.TabIndex = 6;
+            this.label2.Text = "Keybinds";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(401, 18);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.TabIndex = 21;
             // 
             // Form1
             // 
@@ -449,6 +680,7 @@
             this.Name = "Form1";
             this.Text = "Poe Price Checker";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
@@ -468,6 +700,8 @@
             this.tabPage6.ResumeLayout(false);
             this.tabPage6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox6)).EndInit();
+            this.tabPage7.ResumeLayout(false);
+            this.tabPage7.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -506,6 +740,22 @@
         private System.Windows.Forms.PictureBox pictureBox4;
         private System.Windows.Forms.PictureBox pictureBox5;
         private System.Windows.Forms.PictureBox pictureBox6;
+        private System.Windows.Forms.TextBox hotBox6;
+        private System.Windows.Forms.TextBox hotBox5;
+        private System.Windows.Forms.TextBox hotBox4;
+        private System.Windows.Forms.TextBox hotBox3;
+        private System.Windows.Forms.TextBox hotBox2;
+        private System.Windows.Forms.TextBox hotBox1;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label Label_Version;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.ComboBox comboBox1;
     }
 }
 
