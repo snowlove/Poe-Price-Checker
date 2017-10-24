@@ -246,8 +246,17 @@ namespace PoePriceChecker
             comboBox1.Items.Add("Harbinger");
 
             comboBox1.SelectedIndex = 0;
+            //Controls["richTextBox1"].Text = "moooo";
+            this.richTextBox1.Text = "asdf";
         }
 
+        private void Get_Leagues()
+        {
+            using (WebClient wc = new WebClient())
+            {
+                //wc.DownloadStringAsync(new Uri(@"https://www.reddit.com/r/pathofexile/"));
+            }
+        }
 
         private void Load_Config(bool error = false)
         {
@@ -477,22 +486,34 @@ namespace PoePriceChecker
 
         private static void Make_HotKey_HumanReadable(int id, Int32 mod, Int32 key)
         {
-            string Modifier = "N";
+            string Modifier;
             string vk = "s";
             Regex r = new Regex(@"[D0-9]"); //fix currently matches all [D]
 
-            if (mod == 1)
-                Modifier = "Alt+";
-            else if (mod == 3)
-                Modifier = "Ctrl+Alt+";
-            else if (mod == 4)
-                Modifier = "Shift+";
-            else if (mod == 5)
-                Modifier = "Alt+Shift+";
-            else if (mod == 6)
-                Modifier = "Shift+Ctrl+";
-            else if (mod == 7)
-                Modifier = "Shift+Ctrl+Alt+";
+            switch(mod)
+            {
+                case 1:
+                    Modifier = "Alt+";
+                    break;
+                case 3:
+                    Modifier = "Ctrl+Alt+";
+                    break;
+                case 4:
+                    Modifier = "Shift+";
+                    break;
+                case 5:
+                    Modifier = "Alt+Shift+";
+                    break;
+                case 6:
+                    Modifier = "Shift+Ctrl+";
+                    break;
+                case 7:
+                    Modifier = "Shift+Ctrl+Alt+";
+                    break;
+                default:
+                    Modifier = "N";
+                    break;
+            } //zlg was here
 
             foreach(var s in Enum.GetValues(typeof(Keys)))
                 if (key == ((Keys)s).GetHashCode())
