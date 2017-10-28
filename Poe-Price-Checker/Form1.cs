@@ -14,9 +14,10 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Reflection;
-using System.Windows.Media;
+
 using System.Windows.Media.Effects;
 using System.Windows.Media.Animation;
+using Newtonsoft.Json;
 
 namespace PoePriceChecker
 {
@@ -34,83 +35,6 @@ namespace PoePriceChecker
             "UniqueWeapon"
         };
 
-
-        public class HiResTimer
-        {
-            private bool isPerfCounterSupported = false;
-            private Int64 frequency = 0;
-
-            // Windows CE native library with QueryPerformanceCounter().
-            private const string lib = "kernel32.dll";
-            [DllImport(lib)]
-            private static extern int QueryPerformanceCounter(ref Int64 count);
-            [DllImport(lib)]
-            private static extern int QueryPerformanceFrequency(ref Int64 frequency);
-
-            public HiResTimer()
-            {
-                // Query the high-resolution timer only if it is supported.
-                // A returned frequency of 1000 typically indicates that it is not
-                // supported and is emulated by the OS using the same value that is
-                // returned by Environment.TickCount.
-                // A return value of 0 indicates that the performance counter is
-                // not supported.
-                int returnVal = QueryPerformanceFrequency(ref frequency);
-
-                if (returnVal != 0 && frequency != 1000)
-                {
-                    // The performance counter is supported.
-                    isPerfCounterSupported = true;
-                }
-                else
-                {
-                    // The performance counter is not supported. Use
-                    // Environment.TickCount instead.
-                    frequency = 1000;
-                }
-            }
-
-            public Int64 Frequency
-            {
-                get
-                {
-                    return frequency;
-                }
-            }
-
-            public Int64 Value
-            {
-                get
-                {
-                    Int64 tickCount = 0;
-
-                    if (isPerfCounterSupported)
-                    {
-                        // Get the value here if the counter is supported.
-                        QueryPerformanceCounter(ref tickCount);
-                        return tickCount;
-                    }
-                    else
-                    {
-                        // Otherwise, use Environment.TickCount.
-                        return (Int64)Environment.TickCount;
-                    }
-                }
-            }
-        }
-
-
-
-        public struct INPUT
-        {
-            public uint type;
-            public int wVk; 
-            public uint wScan; 
-            public uint dwFlags; 
-            public uint time; 
-            public uint dwExtra;
-        }
-
         //import for hotkeys, keyboard events, and other.
         private const string lib = "user32.dll";
         [DllImport(lib)]
@@ -125,13 +49,11 @@ namespace PoePriceChecker
         private static extern IntPtr GetForegroundWindow();
         [DllImport(lib)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
-        [DllImport(lib)]
-        private static extern uint SendInput(uint nInputs, INPUT input, uint cbSize);
 
 
 
         private static string ItemData_0 = "";
-        //private static bool SMS_ToolTip = false;
+
         private static string[] Default_Config = {
                                                      "#This file is used to save hotkey preferences please do not edit as that may lead to load errors when starting the program.\r\n\r\n",
                                                      "['Modifier_0'] = 0x1", "['Hotkey_0'] = 0x31",
@@ -156,11 +78,11 @@ namespace PoePriceChecker
             { Keys.Alt ^ Keys.Shift ^ Keys.Control, 7 }
         };
 
+        #region SMS_Tooltip class and init
         public class SMS_ToolTip_C
         {
             public bool Enabled { get; set; }
             public int SelectedTab { get; set; }
-            //what the fuck
 
             public SMS_ToolTip_C(bool _en = false, int _st = 0)
             {
@@ -170,6 +92,17 @@ namespace PoePriceChecker
         }
 
         public SMS_ToolTip_C SMS_ToolTip = new SMS_ToolTip_C();
+        #endregion
+
+        #region league api json class and init
+        public class League_json
+        {
+            public string id { get; set; }
+            public string url { get; set; }
+            public DateTime startAt { get; set; }
+            public DateTime? endAt { get; set; }
+        }
+        #endregion
 
         #region ThreadInformation class and shit
         public class ThreadInformation
@@ -227,11 +160,8 @@ namespace PoePriceChecker
             for (int i = 0; i < 6; i++)
                 Set_Hotkey(i, Threads[i].HK_Modifier, Threads[i].Hotkey, this.Handle, true);
 
-            bool _reg = false;
-            _reg = RegisterHotKey(this.Handle, 6, 4, Keys.Right.GetHashCode());
-            if (!_reg) { Console.WriteLine("failed loading shift right"); _reg = false; } //remove later
-            _reg = RegisterHotKey(this.Handle, 7, 4, Keys.Left.GetHashCode());
-            if (!_reg) { Console.WriteLine("failed loading shift left"); _reg = false; } //remove later
+            RegisterHotKey(this.Handle, 6, 4, Keys.Right.GetHashCode());
+            RegisterHotKey(this.Handle, 7, 4, Keys.Left.GetHashCode());
 
             Label_Version.Text = string.Format("Version {0}", Assembly.GetExecutingAssembly().GetName().Version);
 
@@ -240,57 +170,77 @@ namespace PoePriceChecker
 
             checkBox1.Checked = SMS_ToolTip.Enabled;
 
-            //TODO ADD LEAGUE SELECT (THIS IS VERY IMPORTANT!!! Thank you for your time. You're welcome. cheers love)
-            comboBox1.Items.Add("WiP");
-            comboBox1.Items.Add("Standard");
-            comboBox1.Items.Add("Harbinger");
-
+            comboBox1.Items.Add("Connection Error.");
             comboBox1.SelectedIndex = 0;
-            //Controls["richTextBox1"].Text = "moooo";
-            this.richTextBox1.Text = "asdf";
+
+            Get_Leagues();
         }
 
         private void Get_Leagues()
         {
             using (WebClient wc = new WebClient())
             {
-                //wc.DownloadStringAsync(new Uri(@"https://www.reddit.com/r/pathofexile/"));
+                try { wc.DownloadStringAsync(new Uri(@"http://api.pathofexile.com/leagues?type=main&compact=1")); }
+                catch { Get_Leagues_Failover(); }
+
+                wc.DownloadStringCompleted += (s, e) =>
+                {
+                    try { List<League_json> _tmp = JsonConvert.DeserializeObject<List<League_json>>(e.Result); }
+                    catch {
+                        Get_Leagues_Failover();
+                        return;
+                    }
+
+                    List<League_json> leagues = JsonConvert.DeserializeObject<List<League_json>>(e.Result);
+
+                    comboBox1.Items.Clear();
+
+                    foreach (League_json f in leagues)
+                    {
+                        if (f.id.Contains("SSF"))
+                            continue;
+
+                        comboBox1.Items.Add(f.id);
+                    }
+                    comboBox1.SelectedIndex = 2;
+
+                };
             }
         }
+
+
+        private void Get_Leagues_Failover() //internal faillover incase we can't connect to path of exile api servers.
+        {
+            comboBox1.Items.Clear();
+            comboBox1.Items.Add("Standard");
+            comboBox1.Items.Add("Hardcore");
+            comboBox1.Items.Add("Harbinger");
+            comboBox1.SelectedIndex = 2;
+
+            MessageBox.Show("Could not connect to Path of Exile servers to retrieve current leagues.\r\nDefaulting to Standard, Hardcore, Harbinger (Current league when the program was made.)\r\n\r\nIf problem persists for a long duration please submit bug by clicking 'New Issue' at https://github.com/snowlove/Poe-Price-Checker/issues", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
 
         private void Load_Config(bool error = false)
         {
             string[] lines;
 
-            if (!File.Exists("config.cfg"))
+            if (!error)
             {
-                File.WriteAllLines("config.cfg", Default_Config);
-                lines = Default_Config;
+                if (!File.Exists("config.cfg"))
+                {
+                    File.WriteAllLines("config.cfg", Default_Config);
+                    lines = Default_Config;
+                }
+                else
+                    lines = File.ReadAllLines("config.cfg");
             }
             else
-            {
-                lines = File.ReadAllLines("config.cfg");
-            }
-
-            /*
-             * 
-             * 
-             * 
-             * 
-             * FIX THIS STUPID SHIT
-             * 
-             * 
-             * 
-             * 
-             * 
-             */
-            if (error)
                 lines = Default_Config;
 
-            //load all lines and set internal
+
             try
             {
-                //string[] lines = File.ReadAllLines("config.cfg");
                 string[] IVT_Values = { null, null, null };
                 string IVT;
                 int Key;
@@ -409,7 +359,7 @@ namespace PoePriceChecker
             int status = 0;
 
             if (!onLoad)
-                for (int i = 0; i < 6; i++) //TODO: Fix this dxoesn't work anymore because of hardcoded hk and shit
+                for (int i = 0; i < 6; i++)
                     if (id != i)
                         if (key == Threads[i].Hotkey)
                             status = 3;
@@ -428,8 +378,6 @@ namespace PoePriceChecker
                     status = 1;
                 }
             }
-
-            //clears registration but doesn't work why
 
             /*
              * Status error handling
@@ -560,6 +508,8 @@ namespace PoePriceChecker
             WPFControl1 n = new WPFControl1();
             n.Left = GetCursorPosition().X;
             n.Top = GetCursorPosition().Y + 5;
+            n.Height = 300;
+            n.Width = 450;
             n.Show();
             
 
@@ -567,12 +517,10 @@ namespace PoePriceChecker
              * Label for WPF content
              ****************************/
             System.Windows.Controls.Label _fs = new System.Windows.Controls.Label();
-            _fs.Width = 400;
-            _fs.Height = 300;
-            //_fs.Content = "TEST";
-            _fs.Foreground = System.Windows.Media.Brushes.White; //racist
+            _fs.Foreground = System.Windows.Media.Brushes.White;
             _fs.FontFamily = new System.Windows.Media.FontFamily("Segoe UI");
             _fs.FontSize = 18;
+            _fs.FontWeight = System.Windows.FontWeights.Bold;
             _fs.Effect = new DropShadowEffect
             {
                 Color = new System.Windows.Media.Color { A = 255, R = 0, G = 0, B = 0 },
@@ -580,6 +528,7 @@ namespace PoePriceChecker
                 ShadowDepth = 0,
                 Opacity = 1
             };
+            _fs.Opacity = 1;
             n.Content = _fs;
 
 
@@ -588,7 +537,7 @@ namespace PoePriceChecker
              * cursor pos and keep
              * label.text up to date
              ****************************/
-            System.Windows.Forms.Timer _t1 = new System.Windows.Forms.Timer(); //wait for webclient return then start countdown to close
+            System.Windows.Forms.Timer _t1 = new System.Windows.Forms.Timer();
             int _tt = 0;
             _t1.Tick += (sender, e) =>
             {
@@ -604,8 +553,8 @@ namespace PoePriceChecker
                 string[] lines = ((RichTextBox)Threads[SMS_ToolTip.SelectedTab].richBox).Lines;
                 _fs.Content = string.Format("Name: {0}\r\nRecommended Value: {1}", lines.Length > 1 ? lines[1] : "E", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text);
 
-                n.Left = GetCursorPosition().X;
-                n.Top = GetCursorPosition().Y + 5;
+                n.Left = GetCursorPosition().X + 25;
+                n.Top = GetCursorPosition().Y;
                 _tt++;
             };
             _t1.Interval = 10;
@@ -613,22 +562,17 @@ namespace PoePriceChecker
         }
 
 
-        protected override void WndProc(ref Message m) //listen for hotkeys
+        protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
 
             if (m.Msg == 0x0312)
             {
-                //IntPtr hwnd_infocus = GetForegroundWindow();
-
-                //if (hwnd_infocus == this.Handle)
-                    //return;
-
                 if (GetActiveWindowTitle() != "Path of Exile")
                     return;
 
                 //I work by ID so I don't need these but I want to keep them around incase I ever decide I need to see what was pressed
-                Keys key = (Keys)(((int)m.LParam >> 16) & 0xFFFF);
+                //Keys key = (Keys)(((int)m.LParam >> 16) & 0xFFFF);
                 //KeyModifier modifier = (KeyModifier)((int)m.LParam & 0xFFFF);
                 int id = m.WParam.ToInt32();
 
@@ -655,38 +599,7 @@ namespace PoePriceChecker
                 }
                 #endregion
 
-                INPUT[] inputs = new INPUT[1];
-                inputs[0].type = 1;
-                inputs[0].wVk = key.GetHashCode();
-                inputs[0].wScan = 0;
-                inputs[0].dwExtra = 0;
-                inputs[0].time = 0;
-                inputs[0].dwFlags = 0;
-
-                /*inputs[1].type = 1;
-                inputs[1].wVk = key.GetHashCode();
-                inputs[1].wScan = 0;
-                inputs[1].dwExtra = 0;
-                inputs[1].time = 0;
-                inputs[1].dwFlags = 2;*/
-
-                //uint cb = Convert.ToUInt16(Marshal.SizeOf(typeof(INPUT)) * inputs.Length);
-
-                //Console.WriteLine(string.Format("{0}", cb));
-                /* 
-                 * the sizeof operator can be used only in unsafe code blocks. Although you can use the Marshal.
-                 * SizeOf method, the value returned by this method is not always the same as the value returned by sizeof.
-                 * Marshal.SizeOf returns the size after the type has been marshaled, 
-                 * whereas sizeof returns the size as it has been allocated by the common language runtime, including any padding.
-                 *
-                unsafe
-                {
-                    uint cb = sizeof(INPUT) * inputs.Length;
-                }*/
-                //SendInput(1, inputs, cb);
-                SendKeys.Send(key.ToString());
-                //return;
-                //read more on sendinput sendkeys is too unsafe
+                //SendKeys.Send(key.ToString()); I may bring this back later.
 
                 uint KEYEVENTF_KEYUP = 2;
                 byte VK_CONTROL = 0x11;
@@ -695,7 +608,7 @@ namespace PoePriceChecker
                 keybd_event(0x43, 0, KEYEVENTF_KEYUP, 0);
                 keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
 
-                Thread.Sleep(25);
+                Thread.Sleep(50);
 
                 ItemData_0 = Clipboard.GetText();
 
@@ -713,7 +626,7 @@ namespace PoePriceChecker
         {
             tabControl1.SelectTab(_id);
             /*
-             * TODO: Create Cursor spinny shit for SMS
+             * TODO: Create Cursor Busy for SMS
              * Should I delete users clipboard content ? if I don't the key will be blocked
              * or blacklist all alphanumeric keys without a modifier
              */
@@ -723,10 +636,11 @@ namespace PoePriceChecker
                 int id = (int)e.Argument;
                 e.Result = id;
 
-                string Value = "";
                 string ItemTextCopy = ItemData_0;
-                NameValueCollection postParam = new NameValueCollection();
+                string league = "Standard";
                 string Response = "";
+                string Value = "";
+                NameValueCollection postParam = new NameValueCollection();
                 byte[] rBytes;
 
                 if (string.IsNullOrEmpty(ItemTextCopy) || !ItemTextCopy.Contains("Rarity:"))
@@ -747,11 +661,10 @@ namespace PoePriceChecker
                 }
                 ((Label)Threads[id].valueBox).Invoke((MethodInvoker)delegate { ((Label)Threads[id].valueBox).Text = "----"; });
 
-                if (string.IsNullOrEmpty(ItemTextCopy))
-                    return;
+                ((ComboBox)comboBox1).Invoke((MethodInvoker)delegate { league = comboBox1.Text; });
 
                 postParam.Add("itemtext", ItemTextCopy);
-                postParam.Add("league", "Harbinger");
+                postParam.Add("league", league);
                 postParam.Add("auto", "auto");
                 postParam.Add("submit", "Submit");
 
@@ -827,7 +740,6 @@ namespace PoePriceChecker
              * BLACKLIST: ctrl+pgdn, ctrl+pgup, caps lock, tab, shift+all numpad (and all combinations of shift+{X}+num pad), F12, ctrl+shift{e,r,a,j}
              * Q W E R T X D Z A ENT O C S L I H Y K N B U P G M space F8 F1 F 1 2 3 4 5
              */
-
             Keys[] Blacklist = { Keys.Capital, Keys.CapsLock, Keys.F12, Keys.Tab, Keys.Q, Keys.W, Keys.E, Keys.R, Keys.T, Keys.X, Keys.D, Keys.Z, Keys.A, Keys.Enter, Keys.O, Keys.C, Keys.S, Keys.L, Keys.I,
                                  Keys.H, Keys.Y, Keys.K, Keys.N, Keys.B, Keys.U, Keys.P, Keys.G, Keys.M, Keys.Space, Keys.F8, Keys.F1, Keys.F, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.Left, Keys.Right };
 
@@ -844,7 +756,7 @@ namespace PoePriceChecker
                     }
                 }
             }
-
+            
             if (e.KeyCode == Keys.Escape)
                 ((TextBox)sender).Parent.Focus();
             else if (pressedKey != Keys.ShiftKey && pressedKey != Keys.Menu && pressedKey != Keys.ControlKey && pressedKey != Keys.None)
@@ -860,7 +772,7 @@ namespace PoePriceChecker
         }
 
 
-        private void hotBox1_Enter(object sender, EventArgs e) //prep hotkeybox by storing old value in a temporary variable and clearing the field
+        private void hotBox1_Enter(object sender, EventArgs e)
         {
             string _senderName = ((TextBox)sender).Name;
             int _sender_id = Convert.ToInt32(_senderName.Split(new[] { "hotBox" }, StringSplitOptions.None)[1]) - 1;
@@ -897,7 +809,7 @@ namespace PoePriceChecker
         {
             SMS_ToolTip.Enabled = checkBox1.Checked;
 
-            if(!_OnLoad) //Keep from saving config on application load while loading in all settings and setting states
+            if(!_OnLoad)
                 Save_Config(0, 0, 0, checkBox1.Checked == true ? 1 : 0);
         }
     }
