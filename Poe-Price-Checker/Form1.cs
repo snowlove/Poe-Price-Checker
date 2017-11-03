@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Animation;
 using Newtonsoft.Json;
+using System.Globalization;
 
 namespace PoePriceChecker
 {
@@ -502,13 +503,16 @@ namespace PoePriceChecker
 
         private void Create_WPF_Window()
         {
+            //int scrnHeight = Convert.ToInt32(System.Windows.SystemParameters.PrimaryScreenHeight);
+            int scrnWidth = Convert.ToInt32(System.Windows.SystemParameters.PrimaryScreenWidth);
+
             /****************************
              * WPF Window
              ****************************/
             WPFControl1 n = new WPFControl1();
             n.Left = GetCursorPosition().X;
             n.Top = GetCursorPosition().Y + 5;
-            n.Height = 300;
+            n.Height = 200;
             n.Width = 450;
             n.Show();
             
@@ -551,10 +555,31 @@ namespace PoePriceChecker
                     return;
                 }
                 string[] lines = ((RichTextBox)Threads[SMS_ToolTip.SelectedTab].richBox).Lines;
-                _fs.Content = string.Format("Name: {0}\r\nRecommended Value: {1}", lines.Length > 1 ? lines[1] : "E", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text);
+                int v;
+                string sample;
 
-                n.Left = GetCursorPosition().X + 25;
-                n.Top = GetCursorPosition().Y;
+                _fs.Content = string.Format("Name: {0}\r\nRecommended Value: {1}", lines.Length > 1 ? lines[1] : "E", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text);
+                v = string.Format("Name: {0}", lines.Length > 1 ? lines[1] : "E").Length > string.Format("Recommended Value: {0}", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text).Length ? 1 : 2;
+
+                if (v == 2)
+                    sample = string.Format("Recommended Value: {0}", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text);
+                else
+                    sample = string.Format("Name: {0}", lines.Length > 1 ? lines[1] : "E");
+
+
+                System.Windows.Media.Typeface myTypeface = new System.Windows.Media.Typeface("Segoe UI");
+                System.Windows.Media.FormattedText ft = new System.Windows.Media.FormattedText(sample, CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight, myTypeface, 20, System.Windows.Media.Brushes.White);
+
+                if ((GetCursorPosition().X + ft.Width) + 25 > scrnWidth)
+                {
+                    n.Left = (GetCursorPosition().X - 25) - ft.Width;
+                    n.Top = GetCursorPosition().Y;
+                }
+                else
+                {
+                    n.Left = GetCursorPosition().X + 25;
+                    n.Top = GetCursorPosition().Y;
+                }
                 _tt++;
             };
             _t1.Interval = 10;
@@ -676,6 +701,7 @@ namespace PoePriceChecker
                             if ((Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - Threads[id].Started > 20) {
                                 Value = "Error: Timed out (Website down?)."; break;
                             }
+                            wc.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0");
 
                             rBytes = wc.UploadValues("http://www.poeprices.info/query", "POST", postParam);
                             Response = Encoding.UTF8.GetString(rBytes);
