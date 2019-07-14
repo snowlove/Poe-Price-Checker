@@ -54,7 +54,10 @@ namespace PoePriceChecker
 
 
         private static string ItemData_0 = "";
-
+        private static string[] Caches = new string[13] { "Currency", "Fragments", "Incubator", "Scarab", "Fossil", "Resonator", "Essences", "DivinationCard", "Prophecy", "SkillGem", "BaseType", "UniqueMap", "Map" };
+        /*
+         * Fragments (Breach wise) Are under "Currency"
+         */
         private static string[] Default_Config = {
                                                      "#This file is used to save hotkey preferences please do not edit as that may lead to load errors when starting the program.\r\n\r\n",
                                                      "['Modifier_0'] = 0x1", "['Hotkey_0'] = 0x31",
@@ -79,20 +82,42 @@ namespace PoePriceChecker
             { Keys.Alt ^ Keys.Shift ^ Keys.Control, 7 }
         };
 
+        private static Int32 UnixNOW() { return (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds; }
+
         #region SMS_Tooltip class and init
-        public class SMS_ToolTip_C
+        /*public class SMS_ToolTip_C : Form1
         {
             public bool Enabled { get; set; }
             public int SelectedTab { get; set; }
+            private ColorDialog fontColorSelector { get; set; }
+            private Color _fc { get; set; }
+            public Color fontColor {
+                get { return _fc; }
+                set
+                {
+                    _fc = value;
+                    ColorBox.BackColor = value;
+                    //TODO :: Add saving.
+                }
+            
+            }
 
             public SMS_ToolTip_C(bool _en = false, int _st = 0)
             {
                 Enabled = _en;
                 SelectedTab = _st;
+                fontColorSelector = new ColorDialog();
+                _fc = Color.Black;
             }
-        }
 
-        public SMS_ToolTip_C SMS_ToolTip = new SMS_ToolTip_C();
+            public void SetFontColorForToolTip()
+            {
+                if (fontColorSelector.ShowDialog() == DialogResult.OK)
+                    fontColor = fontColorSelector.Color;
+            }
+        }*/
+
+        public SMS_ToolTip SMS_ToolTip = new SMS_ToolTip();
         #endregion
 
         #region league api json class and init
@@ -175,6 +200,9 @@ namespace PoePriceChecker
             comboBox1.SelectedIndex = 0;
 
             Get_Leagues();
+            Check_Cache();
+            //Thread.Sleep(1000);
+            //Write_Cache();
         }
 
         private void Get_Leagues()
@@ -221,7 +249,68 @@ namespace PoePriceChecker
             MessageBox.Show("Could not connect to Path of Exile servers to retrieve current leagues.\r\nDefaulting to Standard, Hardcore, Harbinger (Current league when the program was made.)\r\n\r\nIf problem persists for a long duration please submit bug by clicking 'New Issue' at https://github.com/snowlove/Poe-Price-Checker/issues", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
+        private void Check_Cache(bool error = false)
+        {
+            /* Checking if cache folder and cache files are PREsent. */
+            if (!Directory.Exists("cache"))
+                Directory.CreateDirectory("cache");
 
+            foreach (string Title in Caches)
+                if (!File.Exists(@"cache/" + Title + ".cache"))
+                    File.Create(@"cache/" + Title + ".cache");
+        }
+
+        /* PURGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+        private void Write_Cache(bool error = false)
+        {
+            int starttime;
+            bool comp = false;
+            foreach (string Title in Caches)
+            {
+                comp = false;
+                starttime = UnixNOW();
+                //while (true)
+                //{
+                    //if (UnixNOW() - starttime > 8 || comp)
+                        //break;
+
+                using (WebClient wc = new WebClient())
+                {
+                    wc.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0");
+                    //try
+                    //{
+                    Console.WriteLine("Attempting to grab {0} from https://poe.ninja/api/data/itemoverview?league={1}&type={2} and write to Cache/{3}.cache", Title, comboBox1.Text, Title, Title);
+                    wc.DownloadStringAsync(new Uri(string.Format("https://poe.ninja/api/data/itemoverview?league={0}&type={1}", comboBox1.Text, Title)));
+                    //}
+                    //catch (Exception ex) { throw ex; }
+
+                    wc.DownloadStringCompleted += (s, e) =>
+                    {
+                        Console.WriteLine("Retrieved :: {0}", e.Result);
+                        try { File.WriteAllText(@"Cache/" + Title + ".cache", e.Result); }
+                        catch (Exception ex) { throw ex; }
+                        comp = true;
+                    };
+
+                    wc.DownloadProgressChanged += (s, e) =>
+                    {
+
+                    };
+                }
+                    Thread.Sleep(500);
+
+                    while(true)
+                    {
+                        if (UnixNOW() - starttime > 30 || comp)
+                            break;
+
+                        Thread.Sleep(500);
+                    }
+                //}
+            }
+        }*/
+
+        //TODO :: Write code to save color selection of tooltip.
         private void Load_Config(bool error = false)
         {
             string[] lines;
@@ -522,6 +611,8 @@ namespace PoePriceChecker
              ****************************/
             System.Windows.Controls.Label _fs = new System.Windows.Controls.Label();
             _fs.Foreground = System.Windows.Media.Brushes.White;
+            //_fs.Foreground = System.Windows.Media.Brushes.
+            _fs.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(SMS_ToolTip.fontColor[0], SMS_ToolTip.fontColor[1], SMS_ToolTip.fontColor[2], SMS_ToolTip.fontColor[3]));
             _fs.FontFamily = new System.Windows.Media.FontFamily("Segoe UI");
             _fs.FontSize = 18;
             _fs.FontWeight = System.Windows.FontWeights.Bold;
@@ -640,7 +731,7 @@ namespace PoePriceChecker
                 if (!Threads[id].isEnabled)
                 {
                     Threads[id].isEnabled = true;
-                    Threads[id].Started = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                    Threads[id].Started = UnixNOW();
                     ((PictureBox)Threads[id].TimeWait).Visible = true;
                     HotKeyPressed(id);
                 }
@@ -687,6 +778,49 @@ namespace PoePriceChecker
                 ((Label)Threads[id].valueBox).Invoke((MethodInvoker)delegate { ((Label)Threads[id].valueBox).Text = "----"; });
 
                 ((ComboBox)comboBox1).Invoke((MethodInvoker)delegate { league = comboBox1.Text; });
+                
+                string b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(ItemTextCopy));
+                int stQuery = UnixNOW();
+
+                if(ItemTextCopy.Contains("Rarity: Rare"))
+                {
+                    using (ItemRare ttt = new ItemRare(b64))
+                    {
+                        ((RichTextBox)Threads[id].richBox).Invoke((MethodInvoker)delegate { ((RichTextBox)Threads[id].richBox).Text = ((RichTextBox)Threads[id].richBox).Text + "\r\n" + b64; });
+
+                        while (ttt.ItemData.error != 0) {
+                            if (UnixNOW() - stQuery > 7)
+                                break;
+
+                            Thread.Sleep(1000);
+                        }
+
+                        
+                        if (ttt.ItemData.error == 0) {
+                            ((Label)Threads[id].valueBox).Invoke((MethodInvoker)delegate { ((Label)Threads[id].valueBox).Text = string.Format("Range: {0} - {1} {2}", ttt.ItemData.min, ttt.ItemData.max, ttt.ItemData.currency); });
+                            return;
+                        }
+                    }
+                }
+                /*else if (ItemTextCopy.Contains("Rarity: Divination Card"))
+                {
+                    using (JSON_Classes.Divination ttt = new JSON_Classes.Divination(b64))
+                    {
+
+                        while (ttt.ItemData.error != 0) {
+                            if (UnixNOW() - stQuery > 7)
+                                break;
+
+                            Thread.Sleep(1000);
+                        }
+
+
+                        if (ttt.ItemData.error == 0) {
+                            ((Label)Threads[id].valueBox).Invoke((MethodInvoker)delegate { ((Label)Threads[id].valueBox).Text = string.Format("Range: {0} - {1} {2}", ttt.ItemData.min, ttt.ItemData.max, ttt.ItemData.currency); });
+                            return;
+                        }
+                    }
+                }*/
 
                 postParam.Add("itemtext", ItemTextCopy);
                 postParam.Add("league", league);
@@ -698,7 +832,7 @@ namespace PoePriceChecker
                     try {
                         using (WebClient wc = new WebClient())
                         {
-                            if ((Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - Threads[id].Started > 20) {
+                            if (UnixNOW() - Threads[id].Started > 20) {
                                 Value = "Error: Timed out (Website down?)."; break;
                             }
                             wc.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0");
@@ -837,6 +971,21 @@ namespace PoePriceChecker
 
             if(!_OnLoad)
                 Save_Config(0, 0, 0, checkBox1.Checked == true ? 1 : 0);
+        }
+
+        private void ColorBox_Click(object sender, EventArgs e)
+        {
+            SMS_ToolTip.SetFontColorForToolTip();
+            ColorBox.BackColor = Color.FromArgb(SMS_ToolTip.fontColor[0], SMS_ToolTip.fontColor[1], SMS_ToolTip.fontColor[2], SMS_ToolTip.fontColor[3]);
+            Console.WriteLine("A: {0:0} R: {0:1} G: {0:2} B: {0:3}", SMS_ToolTip.fontColor[0], SMS_ToolTip.fontColor[1], SMS_ToolTip.fontColor[2], SMS_ToolTip.fontColor[3]);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //object[] ob = new object[2] { comboBox1.Text, Caches};
+            //GrabCacheData c = new GrabCacheData(ob);
+            
+            button1.Enabled = false;
         }
     }
 }

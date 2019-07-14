@@ -60,6 +60,9 @@
             this.label12 = new System.Windows.Forms.Label();
             this.richTextBox6 = new System.Windows.Forms.RichTextBox();
             this.tabPage7 = new System.Windows.Forms.TabPage();
+            this.ColorBox = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.Label_Version = new System.Windows.Forms.Label();
             this.hotBox6 = new System.Windows.Forms.TextBox();
@@ -75,7 +78,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -456,6 +459,9 @@
             // 
             // tabPage7
             // 
+            this.tabPage7.Controls.Add(this.button1);
+            this.tabPage7.Controls.Add(this.ColorBox);
+            this.tabPage7.Controls.Add(this.label14);
             this.tabPage7.Controls.Add(this.comboBox1);
             this.tabPage7.Controls.Add(this.checkBox1);
             this.tabPage7.Controls.Add(this.Label_Version);
@@ -479,6 +485,35 @@
             this.tabPage7.TabIndex = 6;
             this.tabPage7.Text = "Settings";
             this.tabPage7.UseVisualStyleBackColor = true;
+            // 
+            // ColorBox
+            // 
+            this.ColorBox.BackColor = System.Drawing.Color.White;
+            this.ColorBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ColorBox.Location = new System.Drawing.Point(287, 44);
+            this.ColorBox.Name = "ColorBox";
+            this.ColorBox.Size = new System.Drawing.Size(25, 25);
+            this.ColorBox.TabIndex = 23;
+            this.ColorBox.Click += new System.EventHandler(this.ColorBox_Click);
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label14.Location = new System.Drawing.Point(180, 47);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(106, 15);
+            this.label14.TabIndex = 22;
+            this.label14.Text = "Tooltip Font Color:";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(401, 18);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.TabIndex = 21;
             // 
             // checkBox1
             // 
@@ -662,14 +697,15 @@
             this.label2.TabIndex = 6;
             this.label2.Text = "Keybinds";
             // 
-            // comboBox1
+            // button1
             // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(401, 18);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 21;
+            this.button1.Location = new System.Drawing.Point(311, 119);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 24;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // Form1
             // 
@@ -756,6 +792,9 @@
         private System.Windows.Forms.Label Label_Version;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Label ColorBox;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Button button1;
     }
 }
 
