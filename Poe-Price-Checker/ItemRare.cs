@@ -54,7 +54,7 @@ namespace PoePriceChecker
                         ItemData.warning_msg = c.warning_msg;
                         ItemData.currency = c.currency;*/
                     }
-                    catch (Exception ef) { throw ef; }
+                    catch { wc.Dispose(); GetItemData(b64); return; }
                 };
             }
         }

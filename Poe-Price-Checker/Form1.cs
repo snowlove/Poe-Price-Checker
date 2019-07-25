@@ -20,6 +20,11 @@ using System.Windows.Media.Animation;
 using Newtonsoft.Json;
 using System.Globalization;
 
+//Requests
+//Add Mod+Scroll to shuffle in game tabs
+//Add Middle mouse, mouse4, mouse5 to keybinds
+//
+
 namespace PoePriceChecker
 {
     public partial class Form1 : Form
@@ -134,7 +139,7 @@ namespace PoePriceChecker
         public class ThreadInformation
         {
             public int id { get; set; }
-            public bool isEnabled { get; set; }
+            public bool isBusy { get; set; }
             public Int32 Started { get; set; }
             public object richBox { get; set; }
             public object valueBox { get; set; }
@@ -145,7 +150,7 @@ namespace PoePriceChecker
 
             public ThreadInformation(int _id, bool _isEnabled, Int32 _Started, object _richBox, object _valueBox, object _TimeWait, object _hotBox, Int32 _HKM = 0, Int32 _HK = 0)
             {
-                isEnabled = _isEnabled;
+                isBusy = _isEnabled;
                 Started = _Started;
                 richBox = _richBox;
                 valueBox = _valueBox;
@@ -173,7 +178,7 @@ namespace PoePriceChecker
             {
                 iOffSet = i + 1;
 
-                Threads.Add(new ThreadInformation(i, false, 0,             //Id, enabled, timestart
+                Threads.Add(new ThreadInformation(i, false, 0,             //Id, isBusy, timestart
                     this.Controls.Find("richTextBox" + iOffSet, true)[0],  //Link "ItemBox" richtextbox to thread.
                     this.Controls.Find("Value" + iOffSet, true)[0],        //Link "Value" label to thread.
                     this.Controls.Find("pictureBox" + iOffSet, true)[0],   //Link Spinny Picture shit to thread.
@@ -201,9 +206,8 @@ namespace PoePriceChecker
 
             Get_Leagues();
             Check_Cache();
-            //Thread.Sleep(1000);
-            //Write_Cache();
         }
+
 
         private void Get_Leagues()
         {
@@ -249,6 +253,7 @@ namespace PoePriceChecker
             MessageBox.Show("Could not connect to Path of Exile servers to retrieve current leagues.\r\nDefaulting to Standard, Hardcore, Harbinger (Current league when the program was made.)\r\n\r\nIf problem persists for a long duration please submit bug by clicking 'New Issue' at https://github.com/snowlove/Poe-Price-Checker/issues", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
+
         private void Check_Cache(bool error = false)
         {
             /* Checking if cache folder and cache files are PREsent. */
@@ -260,55 +265,6 @@ namespace PoePriceChecker
                     File.Create(@"cache/" + Title + ".cache");
         }
 
-        /* PURGEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-        private void Write_Cache(bool error = false)
-        {
-            int starttime;
-            bool comp = false;
-            foreach (string Title in Caches)
-            {
-                comp = false;
-                starttime = UnixNOW();
-                //while (true)
-                //{
-                    //if (UnixNOW() - starttime > 8 || comp)
-                        //break;
-
-                using (WebClient wc = new WebClient())
-                {
-                    wc.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0");
-                    //try
-                    //{
-                    Console.WriteLine("Attempting to grab {0} from https://poe.ninja/api/data/itemoverview?league={1}&type={2} and write to Cache/{3}.cache", Title, comboBox1.Text, Title, Title);
-                    wc.DownloadStringAsync(new Uri(string.Format("https://poe.ninja/api/data/itemoverview?league={0}&type={1}", comboBox1.Text, Title)));
-                    //}
-                    //catch (Exception ex) { throw ex; }
-
-                    wc.DownloadStringCompleted += (s, e) =>
-                    {
-                        Console.WriteLine("Retrieved :: {0}", e.Result);
-                        try { File.WriteAllText(@"Cache/" + Title + ".cache", e.Result); }
-                        catch (Exception ex) { throw ex; }
-                        comp = true;
-                    };
-
-                    wc.DownloadProgressChanged += (s, e) =>
-                    {
-
-                    };
-                }
-                    Thread.Sleep(500);
-
-                    while(true)
-                    {
-                        if (UnixNOW() - starttime > 30 || comp)
-                            break;
-
-                        Thread.Sleep(500);
-                    }
-                //}
-            }
-        }*/
 
         //TODO :: Write code to save color selection of tooltip.
         private void Load_Config(bool error = false)
@@ -592,7 +548,6 @@ namespace PoePriceChecker
 
         private void Create_WPF_Window()
         {
-            //int scrnHeight = Convert.ToInt32(System.Windows.SystemParameters.PrimaryScreenHeight);
             int scrnWidth = Convert.ToInt32(System.Windows.SystemParameters.PrimaryScreenWidth);
 
             /****************************
@@ -600,9 +555,10 @@ namespace PoePriceChecker
              ****************************/
             WPFControl1 n = new WPFControl1();
             n.Left = GetCursorPosition().X;
-            n.Top = GetCursorPosition().Y + 5;
+            n.Top = GetCursorPosition().Y - 1;//+ 5;
             n.Height = 200;
             n.Width = 450;
+            n.IsHitTestVisible = false;
             n.Show();
             
 
@@ -614,6 +570,9 @@ namespace PoePriceChecker
             //_fs.Foreground = System.Windows.Media.Brushes.
             _fs.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(SMS_ToolTip.fontColor[0], SMS_ToolTip.fontColor[1], SMS_ToolTip.fontColor[2], SMS_ToolTip.fontColor[3]));
             _fs.FontFamily = new System.Windows.Media.FontFamily("Segoe UI");
+            if(((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text.Contains("ex"))
+            _fs.FontSize = 32;
+            else
             _fs.FontSize = 18;
             _fs.FontWeight = System.Windows.FontWeights.Bold;
             _fs.Effect = new DropShadowEffect
@@ -649,11 +608,11 @@ namespace PoePriceChecker
                 int v;
                 string sample;
 
-                _fs.Content = string.Format("Name: {0}\r\nRecommended Value: {1}", lines.Length > 1 ? lines[1] : "E", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text);
+                _fs.Content = string.Format("Name: {0}\r\n {1}", lines.Length > 1 ? lines[1] : "E", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text);
                 v = string.Format("Name: {0}", lines.Length > 1 ? lines[1] : "E").Length > string.Format("Recommended Value: {0}", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text).Length ? 1 : 2;
 
                 if (v == 2)
-                    sample = string.Format("Recommended Value: {0}", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text);
+                    sample = string.Format("{0}", ((Label)Threads[SMS_ToolTip.SelectedTab].valueBox).Text);
                 else
                     sample = string.Format("Name: {0}", lines.Length > 1 ? lines[1] : "E");
 
@@ -715,7 +674,12 @@ namespace PoePriceChecker
                 }
                 #endregion
 
-                //SendKeys.Send(key.ToString()); I may bring this back later.
+                //SendKeys.Send(key.ToString()); I may bring this back later. This is for pass-through hotkeys, similar to ~ in AutoHotkey.
+
+                //SECURITY
+                Clipboard.Clear(); //Remove contents of clipboard so that if someone moves mouse while price checking it doesn't try and send potentially sensitive data out.
+                                   //even though I check for item specific text and return before web call, it's just an added precaution.
+                //END SEC
 
                 uint KEYEVENTF_KEYUP = 2;
                 byte VK_CONTROL = 0x11;
@@ -728,9 +692,9 @@ namespace PoePriceChecker
 
                 ItemData_0 = Clipboard.GetText();
 
-                if (!Threads[id].isEnabled)
+                if (!Threads[id].isBusy)
                 {
-                    Threads[id].isEnabled = true;
+                    Threads[id].isBusy = true;
                     Threads[id].Started = UnixNOW();
                     ((PictureBox)Threads[id].TimeWait).Visible = true;
                     HotKeyPressed(id);
@@ -742,7 +706,7 @@ namespace PoePriceChecker
         {
             tabControl1.SelectTab(_id);
             /*
-             * TODO: Create Cursor Busy for SMS
+             * TODO: Create Cursor Busy for SMS - Cut going with PoE overlay.
              * Should I delete users clipboard content ? if I don't the key will be blocked
              * or blacklist all alphanumeric keys without a modifier
              */
@@ -861,7 +825,7 @@ namespace PoePriceChecker
 
                 ((PictureBox)Threads[id].TimeWait).Visible = false;
                 Threads[id].Started = 0;
-                Threads[id].isEnabled = false;
+                Threads[id].isBusy = false;
 
                 SMS_ToolTip.SelectedTab = id;
                 Create_WPF_Window();
@@ -986,6 +950,16 @@ namespace PoePriceChecker
             //GrabCacheData c = new GrabCacheData(ob);
             
             button1.Enabled = false;
+            Process execute = new Process();
+            execute.StartInfo.FileName = "DownloadCacheData.exe";
+            execute.StartInfo.Arguments = "-NOCONSOLE";
+            execute.Start();
+
+            execute.WaitForExit();
+            //using (Process execute = Process.Start("DownloadCacheData.exe"))
+            //{
+                //execute.WaitForExit();
+            //}
         }
     }
 }

@@ -141,7 +141,7 @@ namespace PoePriceChecker
                             };*/
 
                         if (!string.IsNullOrEmpty(json))
-                            File.WriteAllText(baseDir + cache[i] + ".cache", json, Encoding.UTF8);
+                           File.WriteAllText(baseDir + cache[i] + ".cache", json, Encoding.UTF8);
                         else
                             Console.WriteLine("Failed to grab :: {0}", cache[i]);
                     }
