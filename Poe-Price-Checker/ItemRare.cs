@@ -17,28 +17,32 @@ namespace PoePriceChecker
             public string currency { get; set; }
             public string warning_msg { get; set; }
             public int error { get; set; }
-            private List<List<object>> pred_explanation { get; set; }
-            private double pred_confidence_score { get; set; }
+            /*private*/public List<List<object>> pred_explanation { get; set; }
+            /*private*/public double pred_confidence_score { get; set; }
             public string error_msg { get; set; }
         }
 
         public RootObject ItemData;
         private bool disposed = false;
+        private static string itemString;
+        private static string league;
 
-        public ItemRare(string b64String)
+        public ItemRare(string iString, string l)
         {
             ItemData = new RootObject();
+            itemString = iString;
+            league = l;
             ItemData.error = 1;
             ItemData.error_msg = "The class returned before finishing. (Error 103)"; //create struct error type, 103 general error.
-            GetItemData(b64String);
+            GetItemData();//b64String, league);
         }
 
 
-        private void GetItemData(string b64)
+        public void GetItemData()//string b64, string league)
         {
             using (WebClient wc = new WebClient())
             {
-                try { wc.DownloadStringAsync(new Uri(@"https://www.poeprices.info/api?l=Legion&i=" + b64)); }
+                try { wc.DownloadStringAsync(new Uri(@"https://www.poeprices.info/api?l=" + league + "&i=" + itemString)); }
                 catch (Exception ex) { throw ex; }
 
                 wc.DownloadStringCompleted += (s, e) =>
@@ -54,7 +58,7 @@ namespace PoePriceChecker
                         ItemData.warning_msg = c.warning_msg;
                         ItemData.currency = c.currency;*/
                     }
-                    catch { wc.Dispose(); GetItemData(b64); return; }
+                    catch (Exception ex) { wc.Dispose(); this.ItemData.error = 2; this.ItemData.error_msg = ex.ToString(); return; }//GetItemData(); return; }
                 };
             }
         }

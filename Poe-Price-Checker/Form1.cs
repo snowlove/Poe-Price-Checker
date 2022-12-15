@@ -71,6 +71,10 @@ namespace PoePriceChecker
                                                      "['Modifier_3'] = 0x1", "['Hotkey_3'] = 0x34",
                                                      "['Modifier_4'] = 0x1", "['Hotkey_4'] = 0x35",
                                                      "['Modifier_5'] = 0x1", "['Hotkey_5'] = 0x36",
+                                                     "['FontColor_Alpha'] = 255",
+                                                     "['FontColor_Red'] = 255",
+                                                     "['FontColor_Green'] = 255",
+                                                     "['FontColor_Blue'] = 255",
                                                      "['SMS_0'] = 0x0"
                                                  };
         private static bool _OnLoad = true;
@@ -235,7 +239,10 @@ namespace PoePriceChecker
 
                         comboBox1.Items.Add(f.id);
                     }
-                    comboBox1.SelectedIndex = 2;
+                    if (leagues.Count < 5)
+                        comboBox1.SelectedIndex = 0;
+                    else
+                        comboBox1.SelectedIndex = 2;
 
                 };
             }
@@ -323,7 +330,7 @@ namespace PoePriceChecker
             }
         }
 
-        private void Save_Config(int id, Int32 mod = 0, Int32 key = 0, int sms = -1)
+        private void Save_Config(int id, Int32 mod = 0, Int32 key = 0, int sms = -1, bool colorchange = false)
         {
             bool _Edited = false;
             int _Line_ID = 0;
@@ -347,11 +354,12 @@ namespace PoePriceChecker
                  * 
                  */
 
+                string[] IVT_Values = { null, null, null }; //Ever have one of those moments where you're like "What the hell did I do?" and you're trying to figure out what 3rd value is then you realise you just copied it from the read_config and 3rd value is never used here, I know weird right?
+                string IVT;
+                string fingerpainting; //I will definitely change the name of this variable later, most definitely, maybe.
+
                 foreach (string line in lines)
                 {
-                    string[] IVT_Values = { null, null, null };
-                    string IVT;
-
                     if (string.IsNullOrEmpty(line) || line.Contains("#"))
                     {
                         NewFile[_Line_ID] = line;
@@ -384,13 +392,19 @@ namespace PoePriceChecker
                                 NewFile[_Line_ID] = line;
                         }
                     }
+                    else if (colorchange)
+                    {
+                        fingerpainting = Regex.Replace(line, @"[\['\]\s]", "");
+                        fingerpainting = Regex.Replace(fingerpainting, @"[_\=]", "-");
+
+                    }
                     _Line_ID++;
                 }
 
                 if (_Edited)
                     File.WriteAllLines("config.cfg", NewFile);
                 else
-                    throw new Exception();
+                    Console.WriteLine("Nothing new was wrote to config."); //change to messagebox maybe? or return, idk. (Does the user need to know a value wasn't changed, is it possible for the user to proc this, etc)
             }
             catch (Exception ex)
             {
@@ -583,7 +597,9 @@ namespace PoePriceChecker
                 Opacity = 1
             };
             _fs.Opacity = 1;
+            _fs.IsHitTestVisible = false;
             n.Content = _fs;
+            n.IsHitTestVisible = false;
 
 
             /****************************
@@ -676,8 +692,8 @@ namespace PoePriceChecker
 
                 //SendKeys.Send(key.ToString()); I may bring this back later. This is for pass-through hotkeys, similar to ~ in AutoHotkey.
 
-                //SECURITY
-                Clipboard.Clear(); //Remove contents of clipboard so that if someone moves mouse while price checking it doesn't try and send potentially sensitive data out.
+                //SECURITY - FIX BUG WHERE IT WILL CRASH GAME FOR TOO MANY LOW LEVEL CALLS
+                //Clipboard.Clear(); //Remove contents of clipboard so that if someone moves mouse while price checking it doesn't try and send potentially sensitive data out.
                                    //even though I check for item specific text and return before web call, it's just an added precaution.
                 //END SEC
 
@@ -746,22 +762,36 @@ namespace PoePriceChecker
                 string b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(ItemTextCopy));
                 int stQuery = UnixNOW();
 
-                if(ItemTextCopy.Contains("Rarity: Rare"))
+                if(ItemTextCopy.Contains("Rarity: Rare"))// && id != 1)
                 {
-                    using (ItemRare ttt = new ItemRare(b64))
+                    int attemptsb64 = 0;
+                    using (ItemRare ttt = new ItemRare(b64, league))
                     {
                         ((RichTextBox)Threads[id].richBox).Invoke((MethodInvoker)delegate { ((RichTextBox)Threads[id].richBox).Text = ((RichTextBox)Threads[id].richBox).Text + "\r\n" + b64; });
 
                         while (ttt.ItemData.error != 0) {
-                            if (UnixNOW() - stQuery > 7)
+                            //if (UnixNOW() - stQuery > 7)
+                                //break;
+                            if (ttt.ItemData.error == 0 && ttt.ItemData.error_msg != null)
                                 break;
-
-                            Thread.Sleep(1000);
+                            else if (ttt.ItemData.error != 0 && !string.IsNullOrEmpty(ttt.ItemData.error_msg) && attemptsb64 > 3)
+                                break;
+                            else if (ttt.ItemData.error != 0 && !string.IsNullOrEmpty(ttt.ItemData.error_msg))
+                                continue;
+                            else
+                            {
+                                Console.WriteLine("Attempt {0} failed. Reason :: {1}", attemptsb64, ttt.ItemData.error_msg);
+                                attemptsb64++;
+                                ttt.GetItemData();
+                            }
+                            Thread.Sleep(25);
                         }
+
 
                         
                         if (ttt.ItemData.error == 0) {
                             ((Label)Threads[id].valueBox).Invoke((MethodInvoker)delegate { ((Label)Threads[id].valueBox).Text = string.Format("Range: {0} - {1} {2}", ttt.ItemData.min, ttt.ItemData.max, ttt.ItemData.currency); });
+                            Console.WriteLine("Item Pred Confid Score: {0}", ttt.ItemData.pred_confidence_score);
                             return;
                         }
                     }
@@ -796,7 +826,7 @@ namespace PoePriceChecker
                     try {
                         using (WebClient wc = new WebClient())
                         {
-                            if (UnixNOW() - Threads[id].Started > 20) {
+                            if (UnixNOW() - Threads[id].Started > 10) {//10 seconds is resonible I think-2020
                                 Value = "Error: Timed out (Website down?)."; break;
                             }
                             wc.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0");
@@ -811,7 +841,9 @@ namespace PoePriceChecker
 
                             break;
                         }
-                    } catch { }
+                    }
+                    catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+                    Thread.Sleep(500);//no reason to let it spin if we're out of WC call-2020
                 }
 
                 ((Label)Threads[id].valueBox).Invoke((MethodInvoker)delegate { ((Label)Threads[id].valueBox).Text = Value; });
@@ -941,7 +973,8 @@ namespace PoePriceChecker
         {
             SMS_ToolTip.SetFontColorForToolTip();
             ColorBox.BackColor = Color.FromArgb(SMS_ToolTip.fontColor[0], SMS_ToolTip.fontColor[1], SMS_ToolTip.fontColor[2], SMS_ToolTip.fontColor[3]);
-            Console.WriteLine("A: {0:0} R: {0:1} G: {0:2} B: {0:3}", SMS_ToolTip.fontColor[0], SMS_ToolTip.fontColor[1], SMS_ToolTip.fontColor[2], SMS_ToolTip.fontColor[3]);
+            Console.WriteLine("A: {0:0} R: {1} G: {2} B: {3}", SMS_ToolTip.fontColor[0], SMS_ToolTip.fontColor[1], SMS_ToolTip.fontColor[2], SMS_ToolTip.fontColor[3]);
+            Save_Config(0,0,0,-1,true);
         }
 
         private void button1_Click(object sender, EventArgs e)
